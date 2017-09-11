@@ -9,6 +9,7 @@ import android.os.Bundle;
 import android.support.annotation.Nullable;
 import android.support.design.widget.TextInputEditText;
 import android.support.v7.app.AppCompatActivity;
+import android.view.KeyEvent;
 import android.view.View;
 import android.widget.Button;
 import android.widget.Toast;
@@ -27,12 +28,13 @@ public class LoginActivity extends AppCompatActivity implements View.OnClickList
     DatabaseHelper helper;
     SQLiteDatabase db;
     public static LoginActivity instance;
+    private long firstTime = 0;
 
     @Override
     protected void onCreate(@Nullable Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_login);
-        instance=this;
+        instance = this;
         init();
         helper = new DatabaseHelper(this);
         db = helper.getReadableDatabase();
@@ -75,9 +77,9 @@ public class LoginActivity extends AppCompatActivity implements View.OnClickList
                         Toast.makeText(this, "密码错误", Toast.LENGTH_SHORT).show();
                         return;
                     } else {
-                        SharedPreferences sp=getSharedPreferences("isLogin", Context.MODE_PRIVATE);
-                        SharedPreferences.Editor ed=sp.edit();
-                        ed.putInt("flag",1);
+                        SharedPreferences sp = getSharedPreferences("isLogin", Context.MODE_PRIVATE);
+                        SharedPreferences.Editor ed = sp.edit();
+                        ed.putInt("flag", 1);
                         ed.commit();
                         startActivity(new Intent(this, TulingActivity.class));
                         finish();
@@ -89,5 +91,23 @@ public class LoginActivity extends AppCompatActivity implements View.OnClickList
                 startActivity(new Intent(this, RegisterActivity.class));
                 break;
         }
+
+    }
+
+    @Override
+    public boolean onKeyUp(int keyCode, KeyEvent event) {
+        switch (keyCode) {
+            case KeyEvent.KEYCODE_BACK:
+                long secondTime = System.currentTimeMillis();
+                if (secondTime - firstTime > 2000) {                                         //如果两次按键时间间隔大于2秒，则不退出
+                    Toast.makeText(this, "再按一次退出程序", Toast.LENGTH_SHORT).show();
+                    firstTime = secondTime;//更新firstTime
+                    return true;
+                } else {                                                    //两次按键小于2秒时，退出应用
+                    System.exit(0);
+                }
+                break;
+        }
+        return super.onKeyUp(keyCode, event);
     }
 }
